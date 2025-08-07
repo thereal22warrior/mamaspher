@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MamaSphere AI Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b6b, #667eea);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.5));
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #ff6b6b;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(45deg, #ff6b6b, #667eea);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            position: relative;
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 600px;
+            z-index: 10;
+            animation: fadeInLeft 1s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #fff, #f0f8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(255,255,255,0.3);
+        }
+
+        .hero p {
+            font-size: 1.4rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn, .cta-button {
+            display: inline-block;
+            padding: 18px 40px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover, .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6);
+        }
+
+        .canvas-container {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        #hero-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        section {
+            padding: 100px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        section h2 {
+            font-size: 3rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .about {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            margin: 50px 5%;
+        }
+
+        .about-text {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            opacity: 0.9;
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #ff6b6b, #667eea);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 3rem;
+            width: 50%;
+        }
+
+        .timeline-item.left {
+            left: 0;
+            padding-right: 2rem;
+        }
+
+        .timeline-item.right {
+            left: 50%;
+            padding-left: 2rem;
+        }
+
+        .timeline-item .content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .timeline-item .content h3 {
+            color: #ff6b6b;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stats {
+            text-align: center;
+        }
+
+        .stat-bars {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat {
+            margin-bottom: 2rem;
+        }
+
+        .stat .label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            height: 30px;
+            overflow: hidden;
+        }
+
+        .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #667eea);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 2s ease;
+        }
+
+        .card-grid, .use-case-grid, .benefit-grid, .testimonial-grid, .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .card, .use-case, .benefit-card, .testimonial-card, .faq-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover, .use-case:hover, .benefit-card:hover, .testimonial-card:hover, .faq-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .card::before, .use-case::before, .benefit-card::before, .testimonial-card::before, .faq-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #667eea, #764ba2);
+        }
+
+        .card h3, .use-case h4, .faq-item h4 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #f0f8ff;
+        }
+
+        .newsletter {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            margin: 50px 5%;
+        }
+
+        .newsletter-form {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .newsletter-form input, .newsletter-form textarea {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .newsletter-form input::placeholder, .newsletter-form textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .cta {
+            text-align: center;
+            padding: 100px 5%;
+        }
+
+        .cta h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta p {
+            font-size: 1.3rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        .gallery {
+            text-align: center;
+        }
+
+        .gallery img {
+            max-width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 50px 5%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Popup Modal Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(30px);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            border-radius: 25px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+            box-shadow: 0 25px 80px rgba(255, 107, 107, 0.3);
+        }
+
+        .popup-overlay.show .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-content h3 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #667eea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .popup-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .popup-close {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .popup-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .popup-emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .empathy-popup {
+            border: 2px solid rgba(255, 182, 193, 0.5);
+            box-shadow: 0 25px 80px rgba(255, 182, 193, 0.3);
+        }
+
+        .empathy-popup h3 {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .empathy-popup .popup-close {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+        }
+
+        .empathy-popup .popup-close:hover {
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.4);
+        }
+
+        .floating-shapes {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255, 107, 107, 0.1), rgba(102, 126, 234, 0.1));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape1 {
+            width: 200px;
+            height: 200px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape2 {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .shape3 {
+            width: 120px;
+            height: 120px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .fade-in {
+            animation: fadeInLeft 1s ease-out;
+        }
+
+        .delay-1 { animation-delay: 0.3s; animation-fill-mode: both; opacity: 0; }
+        .delay-2 { animation-delay: 0.6s; animation-fill-mode: both; opacity: 0; }
+
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 2rem;
+            }
+            
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+
+            .timeline-item.left, .timeline-item.right {
+                left: 0;
+                width: 100%;
+                padding: 0 0 0 2rem;
+            }
+
+            .timeline::before {
+                left: 0;
+            }
+
+            section {
+                padding: 50px 5%;
+            }
+
+            section h2 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+        <div class="shape shape3"></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo" onclick="showEmpathyPopup()">MamaSphere</div>
+        <ul class="nav-links">
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#problems">Problems</a></li>
+            <li><a href="#features">Features</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <h1 class="fade-in">Welcome to MamaSphere</h1>
+            <p class="fade-in delay-1">Your AI-powered mental health companion for modern motherhood.</p>
+            <a href="#about" class="btn fade-in delay-2">Learn More</a>
+        </div>
+        <div class="canvas-container">
+            <canvas id="hero-canvas"></canvas>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <h2>🌸 About MamaSphere</h2>
+        <p class="about-text">
+            MamaSphere was created to empower mothers through AI — not just with data, but with deep care. 
+            We believe every mother deserves a companion that listens, protects, and understands her journey.
+        </p>
+
+        <!-- Timeline -->
+        <div class="timeline">
+            <div class="timeline-item left">
+                <div class="content">
+                    <h3>2022</h3>
+                    <p>Started research on maternal mental health trends worldwide.</p>
+                </div>
+            </div>
+            <div class="timeline-item right">
+                <div class="content">
+                    <h3>2023</h3>
+                    <p>Interviewed 500+ moms to build empathy-first AI use cases.</p>
+                </div>
+            </div>
+            <div class="timeline-item left">
+                <div class="content">
+                    <h3>2024</h3>
+                    <p>Prototype of MamaSphere device launched with 3 AI modules.</p>
+                </div>
+            </div>
+            <div class="timeline-item right">
+                <div class="content">
+                    <h3>2025</h3>
+                    <p>Full AI hub + wearable ecosystem for emotional & physical safety.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problems & Statistics Section -->
+    <section class="stats" id="problems">
+        <h2>🔍 Maternal Mental Health in 2025</h2>
+        <p>MamaSphere addresses the most pressing emotional and psychological challenges faced by mothers today:</p>
+
+        <div class="stat-bars">
+            <div class="stat">
+                <span class="label">Postpartum Depression</span>
+                <div class="bar"><div class="fill" style="width: 25%;">25%</div></div>
+            </div>
+            <div class="stat">
+                <span class="label">Maternal Burnout</span>
+                <div class="bar"><div class="fill" style="width: 40%;">40%</div></div>
+            </div>
+            <div class="stat">
+                <span class="label">Perinatal Depression</span>
+                <div class="bar"><div class="fill" style="width: 20%;">20%</div></div>
+            </div>
+            <div class="stat">
+                <span class="label">Postpartum Anxiety</span>
+                <div class="bar"><div class="fill" style="width: 17%;">17%</div></div>
+            </div>
+            <div class="stat">
+                <span class="label">PTSD After Birth</span>
+                <div class="bar"><div class="fill" style="width: 6%;">6%</div></div>
+            </div>
+            <div class="stat">
+                <span class="label">Suicidal Ideation</span>
+                <div class="bar"><div class="fill" style="width: 14%;">14%</div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Modules Section -->
+    <section class="features" id="features">
+        <h2>🧠 Core AI Modules</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h3>EmoCare</h3>
+                <p>Track moods, detect stress, and offer calming support 24/7.</p>
+            </div>
+            <div class="card">
+                <h3>FinGuard</h3>
+                <p>Voice budgeting, OCR receipts, bill reminders, and grant tips.</p>
+            </div>
+            <div class="card">
+                <h3>CommUnity</h3>
+                <p>Find local moms, share tasks, coordinate weekend meetups.</p>
+            </div>
+            <div class="card">
+                <h3>CareFirst</h3>
+                <p>Chatbot for legal help, counseling, and emotional emergencies.</p>
+            </div>
+            <div class="card">
+                <h3>ChildGuard</h3>
+                <p>Detect cries, falls, hazards. Instant alerts to phone or wearable.</p>
+            </div>
+            <div class="card">
+                <h3>ShopSmart</h3>
+                <p>Plan meals, group purchases, discounts, delivery tracking.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real-Life Use Cases -->
+    <section class="use-cases" id="use-cases">
+        <h2>🌟 Real-Life Use Cases</h2>
+        <div class="use-case-grid">
+            <div class="use-case">
+                <h4>🌅 Morning Check-In</h4>
+                <p>"Good morning, Priya! You slept 6 hrs. Shall I reallocate grocery funds?"</p>
+            </div>
+            <div class="use-case">
+                <h4>🧘 Stress Detection</h4>
+                <p>CareFirst detects anxiety in your voice and initiates calming support instantly.</p>
+            </div>
+            <div class="use-case">
+                <h4>🤝 Weekend Planning</h4>
+                <p>Connect with local moms to plan shared shopping and kids' activities.</p>
+            </div>
+            <div class="use-case">
+                <h4>🚨 Crisis Response</h4>
+                <p>CrisisNav sends safe routes to your phone and wearable when danger is nearby.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits" id="benefits">
+        <h2>💡 Why Choose MamaSphere?</h2>
+        <div class="benefit-grid">
+            <div class="benefit-card">✅ Holistic care: emotional, legal, financial, parenting</div>
+            <div class="benefit-card">🔐 Local AI = Privacy-first, low-latency support</div>
+            <div class="benefit-card">🌟 Learns & adapts to your lifestyle</div>
+            <div class="benefit-card">📡 Works offline in emergency zones</div>
+            <div class="benefit-card">👩‍👧 Designed for real moms by real moms</div>
+            <div class="benefit-card">📱 Smart alerts synced to wearables</div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery" id="gallery">
+        <h2>📸 A Glimpse into MamaSphere</h2>
+        <div class="gallery-grid">
+            <div style="background: rgba(255,255,255,0.1); padding: 3rem; border-radius: 20px; backdrop-filter: blur(20px);">
+                <p style="font-size: 1.2rem; opacity: 0.8;">Interactive 3D visualization of the MamaSphere device and ecosystem above</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials" id="testimonials">
+        <h2>💬 What Moms Are Saying</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <p>"MamaSphere changed my life. I finally feel seen, supported, and heard every day."</p>
+                <h4>— Aisha, First-Time Mom</h4>
+            </div>
+            <div class="testimonial-card">
+                <p>"The AI support during my postpartum anxiety was a lifesaver. It's like therapy in my pocket."</p>
+                <h4>— Megha, Software Engineer & Mother of 2</h4>
+            </div>
+            <div class="testimonial-card">
+                <p>"I use ChildGuard and CommUnity every day. It's more than a product—it's my partner."</p>
+                <h4>— Priya, Full-time Homemaker</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <h2>❓ Frequently Asked Questions</h2>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h4>Is MamaSphere available offline?</h4>
+                <p>Yes! Many core features like safety alerts and journaling work without internet.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Can it detect postpartum depression?</h4>
+                <p>Our EmoCare module tracks symptoms using voice, sleep, and behavior patterns. It can alert you and recommend help.</p>
+            </div>
+            <div class="faq-item">
+                <h4>What languages does MamaSphere support?</h4>
+                <p>We support English, Hindi, Tamil, Bengali, and will expand to 10+ languages in the next release.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Is my data private?</h4>
+                <p>Absolutely. MamaSphere is designed with privacy-first local AI. No data is shared without consent.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter & Contact Section -->
+    <section class="newsletter" id="newsletter">
+        <h2>📬 Stay Connected</h2>
+        <p>Get updates, insights, and launch invites. We'll never spam.</p>
+        <form class="newsletter-form">
+            <input type="text" placeholder="Your Name" required>
+            <input type="email" placeholder="Your Email" required>
+            <textarea rows="4" placeholder="Your Message (optional)"></textarea>
+            <button type="submit" class="btn">Subscribe</button>
+        </form>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="cta" id="cta">
+        <h2>Ready to Lighten the Load of Motherhood?</h2>
+        <p>Join thousands of empowered moms using MamaSphere today.</p>
+        <a href="#" class="cta-button">Get Early Access</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2025 MamaSphere AI Hub | Designed with ❤️ for Every Mother</p>
+    </footer>
+
+    <!-- Popup Modal for Subscription -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-content">
+            <span class="popup-emoji">🚧</span>
+            <h3>Hold On!</h3>
+            <p>We haven't created the model yet! Our amazing team is still working hard to bring MamaSphere to life. Stay tuned for updates!</p>
+            <button class="popup-close" onclick="closePopup()">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Empathy Popup Modal for Logo -->
+    <div class="popup-overlay" id="empathyPopupOverlay">
+        <div class="popup-content empathy-popup">
+            <span class="popup-emoji">💝</span>
+            <h3>We Understand</h3>
+            <p id="empathyMessage">We understand the pain of your mom, and if you are a mother, we understand your journey too. Every sleepless night, every worry, every moment of doubt - you're not alone. MamaSphere is here to support you.</p>
+            <button class="popup-close" onclick="closeEmpathyPopup()">Thank you ❤️</button>
+        </div>
+    </div>
+
+    <script>
+        // Three.js Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: document.getElementById('hero-canvas'), 
+            alpha: true, 
+            antialias: true 
+        });
+
+        renderer.setSize(window.innerWidth * 0.5, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
+
+        // Create the main hub device (cylinder with rounded edges)
+        const hubGeometry = new THREE.CylinderGeometry(2, 2.2, 1, 32);
+        const hubMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xffffff,
+            shininess: 100,
+            transparent: true,
+            opacity: 0.9
+        });
+        const hub = new THREE.Mesh(hubGeometry, hubMaterial);
+        scene.add(hub);
+
+        // Create the wearable band (torus)
+        const bandGeometry = new THREE.TorusGeometry(1.5, 0.3, 16, 100);
+        const bandMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xff6b6b,
+            shininess: 80
+        });
+        const band = new THREE.Mesh(bandGeometry, bandMaterial);
+        band.position.set(3, 1, 0);
+        scene.add(band);
+
+        // Create floating data particles
+        const particles = [];
+        for (let i = 0; i < 50; i++) {
+            const particleGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+            const particleMaterial = new THREE.MeshBasicMaterial({ 
+                color: new THREE.Color().setHSL(Math.random(), 0.7, 0.8),
+                transparent: true,
+                opacity: 0.8
+            });
+            const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+            
+            particle.position.set(
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 6,
+                (Math.random() - 0.5) * 8
+            );
+            
+            particles.push({
+                mesh: particle,
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02
+                )
+            });
+            
+            scene.add(particle);
+        }
+
+        // Create holographic rings around the hub
+        for (let i = 0; i < 3; i++) {
+            const ringGeometry = new THREE.RingGeometry(3 + i * 0.5, 3.2 + i * 0.5, 32);
+            const ringMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x667eea,
+                transparent: true,
+                opacity: 0.3 - i * 0.1,
+                side: THREE.DoubleSide
+            });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.rotation.x = Math.PI / 2;
+            ring.position.y = -0.5;
+            scene.add(ring);
+        }
+
+        // Lighting setup
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        const pointLight = new THREE.PointLight(0xff6b6b, 1, 100);
+        pointLight.position.set(3, 1, 2);
+        scene.add(pointLight);
+
+        camera.position.set(0, 2, 8);
+        camera.lookAt(0, 0, 0);
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            // Rotate the main hub
+            hub.rotation.y += 0.01;
+            hub.position.y = Math.sin(time) * 0.2;
+
+            // Animate the wearable band
+            band.rotation.x += 0.02;
+            band.rotation.y += 0.01;
+            band.position.y = 1 + Math.cos(time * 1.5) * 0.3;
+
+            // Animate holographic rings
+            scene.children.forEach((child, index) => {
+                if (child.geometry instanceof THREE.RingGeometry) {
+                    child.rotation.z += 0.005 * (index + 1);
+                }
+            });
+
+            // Animate particles
+            particles.forEach(particle => {
+                particle.mesh.position.add(particle.velocity);
+                
+                // Boundary check
+                if (Math.abs(particle.mesh.position.x) > 5) particle.velocity.x *= -1;
+                if (Math.abs(particle.mesh.position.y) > 3) particle.velocity.y *= -1;
+                if (Math.abs(particle.mesh.position.z) > 4) particle.velocity.z *= -1;
+                
+                // Gentle rotation
+                particle.mesh.rotation.x += 0.01;
+                particle.mesh.rotation.y += 0.01;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth * 0.5, window.innerHeight);
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Dynamic navbar effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.style.background = 'rgba(0, 0, 0, 0.8)';
+            } else {
+                navbar.style.background = 'rgba(0, 0, 0, 0.1)';
+            }
+        });
+
+        // Mouse interaction with 3D scene
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            // Subtle camera movement based on mouse position
+            camera.position.x = mouseX * 2;
+            camera.position.y = 2 + mouseY;
+            camera.lookAt(0, 0, 0);
+        });
+
+        // Animated statistics bars
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const fills = entry.target.querySelectorAll('.fill');
+                    fills.forEach(fill => {
+                        const width = fill.style.width;
+                        fill.style.width = '0%';
+                        setTimeout(() => {
+                            fill.style.width = width;
+                        }, 200);
+                    });
+                }
+            });
+        }, observerOptions);
+
+        // Observe the stats section
+        const statsSection = document.querySelector('.stats');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+
+        // Newsletter form submission
+        const newsletterForm = document.querySelector('.newsletter-form');
+        if (newsletterForm) {
+            newsletterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                showPopup();
+            });
+        }
+
+        // CTA button functionality
+        const ctaButton = document.querySelector('.cta-button');
+        if (ctaButton) {
+            ctaButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPopup();
+            });
+        }
+
+        // Logo empathy popup functions
+        function showEmpathyPopup() {
+            const popup = document.getElementById('empathyPopupOverlay');
+            popup.classList.add('show');
+        }
+
+        function closeEmpathyPopup() {
+            const popup = document.getElementById('empathyPopupOverlay');
+            popup.classList.remove('show');
+        }
+
+        // Close empathy popup when clicking outside
+        document.getElementById('empathyPopupOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'empathyPopupOverlay') {
+                closeEmpathyPopup();
+            }
+        });
+
+        // Popup functions
+        function showPopup() {
+            const popup = document.getElementById('popupOverlay');
+            popup.classList.add('show');
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('popupOverlay');
+            popup.classList.remove('show');
+        }
+
+        // Close popup when clicking outside
+        document.getElementById('popupOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'popupOverlay') {
+                closePopup();
+            }
+        });
+
+        // Close popup with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePopup();
+                closeEmpathyPopup();
+            }
+        });
+    </script>
+</body>
+</html>
